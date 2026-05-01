@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Station",
+  "type": "object",
+  "required": ["name", "type"],
+  "properties": {
+    "name":   { "type": "string",  "description": "Display name for the station" },
+    "type":   { "type": "string",  "enum": ["twitch", "somafm", "web radio", "local file"] },
+    "channel":{ "type": "string",  "description": "Twitch channel name (required for type=twitch)" },
+    "url":    { "type": "string",  "format": "uri", "description": "Stream URL or .pls/.m3u (radio types)" },
+    "tags":   { "type": "array", "items": { "type": "string" } },
+    "notes":  { "type": "string" }
+  }
+}

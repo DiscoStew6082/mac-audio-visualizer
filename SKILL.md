@@ -27,7 +27,9 @@ Audio Source (Chrome/Twitch/Safari)
 
 ## Step 1: Install BlackHole Virtual Audio Driver
 
-BlackHole creates a virtual audio device that lets you capture system audio.
+BlackHole creates a virtual audio device that lets you capture system audio without screen recording.
+
+**Full details:** [docs/blackhole.md](docs/blackhole.md)
 
 ```bash
 brew install blackhole-2ch
@@ -35,92 +37,37 @@ brew install blackhole-2ch
 
 After installation, **reboot your Mac** — the kernel extension requires it.
 
-### Register with macOS Audio Server
-
-If you've upgraded from an older BlackHole or the driver isn't detected:
-
-```bash
-sudo killall coreaudiod && sleep 4 && SwitchAudioSource -a
-```
-
-You should see `BlackHole 2ch` listed under both inputs and outputs:
-- **Inputs:** BlackHole 2ch, External Microphone
-- **Outputs:** BlackHole 2ch, External Headphones, Mac Studio Speakers
-
-If `SwitchAudioSource` is not installed:
-```bash
-brew install switchaudio-osx
-```
-
 ---
 
 ## Step 2: Install ProjectMilkSyphon Visualizer
 
 ProjectMilkSyphon v3.8+ can capture system audio directly on macOS 13+.
 
-### Download
-
 1. Visit: **https://vdmx.vidvox.net/blog/projectmilksyphon**
-2. Click "Download ProjectMilkSyphon (v3.8 – August 13, 2025)"
-3. Mount the `.dmg` and run the installer
-
-If you already have a `.pkg` file from a mounted volume:
-```bash
-# Extract app from flat package
-cd /tmp && mkdir PMS_extract
-xar -xf "/Volumes/YourVolume/ProjectMilkSyphon.pkg" component.pkg
-cat component.pkg/Payload | gunzip -d | cpio -idv
-cp -R extracted/path/ProjectMilkSyphon.app /Applications/
-```
+2. Download and install the `.dmg`
 
 ### Install Presets
 
-ProjectMilkSyphon ships without presets. Download the "Cream of the Crop" pack (~10K MilkDrop presets):
-
 ```bash
-# Download preset pack and textures
-curl -L -o /tmp/presets.tar.gz \
-  "https://github.com/projectM-visualizer/presets-cream-of-the-crop/archive/master.tar.gz"
-
-tar -xzf /tmp/presets.tar.gz -C ~/
-mv ~/presets-cream-of-the-crop-master ~/share/projectM
-
-# Download required textures
-curl -L -o /tmp/textures.tar.gz \
-  "https://github.com/projectM-visualizer/presets-milkdrop-texture-pack/archive/master.tar.gz"
-
-tar -xzf /tmp/textures.tar.gz -C ~/
-cp -R ~/presets-milkdrop-texture-pack-master/textures ~/share/projectM/
-
-# Symlink to standard location
-mkdir -p ~/.local/share
-ln -sf ~/share/projectM ~/.local/share/projectM
+./scripts/install-presets.sh
 ```
 
-**9,795 presets + 66 textures** will be available at `~/share/projectM/`.
+This downloads ~9,795 MilkDrop presets + 66 textures to `~/share/projectM/`.
 
-In ProjectMilkSyphon: Settings → Files tab → navigate to `/Users/YOUR_USERNAME/share/projectM/`
+In ProjectMilkSyphon: Settings → Files tab → navigate to `~/share/projectM/`
 
 ---
 
 ## Step 3: Create Multi-Output Audio Route
 
-Use **Audio MIDI Setup** (open via Spotlight: `Cmd+Space` → "MIDI"):
+**Full details:** [docs/blackhole.md](docs/blackhole.md)
 
-1. Click the `+` button bottom left
+Use **Audio MIDI Setup** (`Cmd+Space` → "MIDI"):
+
+1. Click the `+` button bottom-left
 2. Select **Create Multi-Output Device**
-3. In the right panel, check BOTH:
-   - Your headphones or audio interface (e.g., "External Headphones")
-   - **BlackHole 2ch**
-4. Right-click the new multi-output device → **Use This Device For Sound Output**
-
-All system audio now goes to both your headphones AND BlackHole simultaneously.
-
-**Verify from CLI:**
-```bash
-SwitchAudioSource -a -t output
-# Should show: BlackHole 2ch, External Headphones (both checked in multi-output)
-```
+3. Check both your headphones AND **BlackHole 2ch**
+4. Right-click → **Use This Device For Sound Output**
 
 ---
 
@@ -128,78 +75,45 @@ SwitchAudioSource -a -t output
 
 1. Launch **ProjectMilkSyphon** from `/Applications/`
 2. Click the **Settings gear icon**
-3. Go to **Audio Source**
-4. Select **BlackHole 2ch**
+3. Go to **Audio Source** → select **BlackHole 2ch**
 
-The visualizer should immediately begin reacting to any audio playing on your Mac (Twitch, browser radio, etc.).
+The visualizer begins reacting immediately.
 
 ---
 
 ## Step 5: Verify Everything Works
 
-1. Open Chrome/Firefox → play a Twitch stream or online radio
-2. Confirm you hear audio through your headphones normally
-3. Check that ProjectMilkSyphon's visualizer window shows moving graphics synced to the music
+```bash
+./scripts/verify-audio-route.sh
+```
 
-### CLI Verification Commands
+Then open a stream in your browser — you should hear audio and see the visualizer moving.
+
+### Quick Launch for Twitch
 
 ```bash
-# List all audio devices (inputs)
-SwitchAudioSource -a -t input
-# Expected: BlackHole 2ch, External Microphone
-
-# List all audio devices (outputs)
-SwitchAudioSource -a -t output
-# Expected: BlackHole 2ch, External Headphones (+ others)
-
-# Check if ProjectMilkSyphon is running
-pgrep -l ProjectMilkSyphon
+./scripts/launch_twitch_visualizer.sh <channel>
+# Example:
+./scripts/launch_twitch_visualizer.sh your_channel_name
 ```
 
 ---
 
-## Troubleshooting Checklist
+## Alternative: Loopback (Paid)
 
-### "I hear audio but visualizer does not move"
+If you prefer not to use BlackHole, [Rogue Amoeba Loopback](https://rogueamoeba.com/loopback/) ($129) offers a GUI-based routing with per-app capture.
 
-1. ProjectMilkSyphon Settings → Audio Source → confirm **BlackHole 2ch** is selected (not Built-in Microphone)
-2. System Settings → Privacy & Security → **Microphone** → ensure ProjectMilkSyphon has permission
-3. System Settings → Privacy & Security → **System Audio Capture** → ensure ProjectMilkSyphon has permission
-4. Increase volume on your audio source — very quiet audio won't trigger the visualizer
+**Full comparison:** [docs/loopback.md](docs/loopback.md)
 
-### "Visualizer moves but I hear nothing"
+---
 
-1. Audio MIDI Setup → right-click multi-output device → confirm headphones are checked
-2. System Settings → Sound → Output → select your headphones (not BlackHole alone)
-3. `SwitchAudioSource -a -t output` — should show both BlackHole AND headphones
+## Troubleshooting
 
-### "BlackHole 2ch does not show up in audio devices"
+See [docs/troubleshooting.md](docs/troubleshooting.md) for the full matrix of issues and fixes, or run:
 
-1. **Reboot** — kernel extensions load at startup
-2. If already rebooted, run: `sudo killall coreaudiod && sleep 4`
-3. Check driver is installed: `ls /Library/Audio/Plug-Ins/HAL/BlackHole2ch.driver`
-
-### "Audio level is too low or clipping in visualizer"
-
-1. ProjectMilkSyphon Settings → adjust **Gain** slider upward
-2. In Audio MIDI Setup multi-output device, you can lower BlackHole relative to headphones to balance
-
-### "Bluetooth headphones not included in the route"
-
-1. Bluetooth devices appear as separate output devices
-2. Add your Bluetooth device to the multi-output device alongside BlackHole
-3. Note: Bluetooth introduces latency — visualizer may be slightly behind audio
-
-### "ProjectMilkSyphon shows no presets / blank preset list"
-
-1. Settings → Files tab → navigate to `/Users/YOUR_USER/share/projectM/`
-2. Confirm it contains folders like `Reaction/`, `Fractal/`, `Geometric/` with `.milk` files inside
-3. If empty, re-download the preset pack (see Step 2)
-
-### "App won't launch / security warning"
-
-1. System Settings → Privacy & Security → scroll down → "Open anyway" for ProjectMilkSyphon
-2. Or: Control-click ProjectMilkSyphon.app → Open → confirm
+```bash
+./scripts/verify-audio-route.sh
+```
 
 ---
 

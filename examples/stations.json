@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DiscoStew6082/mac-audio-visualizer/main/examples/stations.schema.json",
+  "_schema": "Schema: type, name, channel (twitch), url (radio), tags[], notes",
+  "stations": [
+    {
+      "type": "twitch",
+      "name": "Twitch — Example Music Channel",
+      "channel": "your_channel_name",
+      "notes": "Replace with a Twitch channel you follow",
+      "tags": ["music"]
+    },
+    {
+      "type": "twitch",
+      "name": "Twitch — Example Electronic Channel",
+      "channel": "another_channel_name",
+      "notes": "Replace with another Twitch channel you follow",
+      "tags": ["synthwave", "retrowave", "electronic"]
+    },
+    {
+      "type": "somafm",
+      "name": "SomaFM — Drone Zone",
+      "url": "https://ice1.somafm.com/dronezone-128-mp3",
+      "notes": "Great for slow, trippy MilkDrop presets",
+      "tags": ["ambient", "drone", "atmospheric"]
+    },
+    {
+      "type": "somafm",
+      "name": "SomaFM — DEF CON Radio",
+      "url": "https://ice1.somafm.com/defcon-128-mp3",
+      "notes": "",
+      "tags": ["electronic", "dark", "industrial"]
+    },
+    {
+      "type": "web radio",
+      "name": "Nightwave Plaza — Vaporwave",
+      "url": "https://plaza.one/listen.pls",
+      "notes": "Open in browser, route to BlackHole via multi-output",
+      "tags": ["vaporwave", "retro", "aesthetic"]
+    }
+  ]
+}
