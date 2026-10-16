@@ -1,34 +1,36 @@
 #!/bin/bash
-# Verify audio routing for ProjectMilkSyphon visualizer setup
+# Inspect available audio devices, process, and files; does not change routing.
+set -euo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=audio-common.sh
+source "$SCRIPT_DIR/audio-common.sh"
+AUDIO_DEVICE="${1:-BlackHole 2ch}"
+resolve_switch_audio_source
 
-echo "=== OUTPUT DEVICES ==="
-SwitchAudioSource -a -t output 2>/dev/null || /opt/homebrew/bin/SwitchAudioSource -a -t output
-
-echo ""
-echo "=== INPUT DEVICES ==="
-SwitchAudioSource -a -t input 2>/dev/null || /opt/homebrew/bin/SwitchAudioSource -a -t input
-
-echo ""
-echo "=== BLACKHOLE STATUS ==="
-if SwitchAudioSource -a | grep -q "BlackHole"; then
-    echo "✅ BlackHole 2ch is registered with macOS audio"
+# Resolve once and use the same binary for every diagnostic.
+OUTPUT_DEVICES=$("$SWITCH_AUDIO_SOURCE" -a -t output)
+INPUT_DEVICES=$("$SWITCH_AUDIO_SOURCE" -a -t input)
+printf '=== OUTPUT DEVICES ===\n%s\n\n=== INPUT DEVICES ===\n%s\n' "$OUTPUT_DEVICES" "$INPUT_DEVICES"
+status=0
+printf '\n=== REQUESTED INPUT ===\n'
+if has_audio_device "$INPUT_DEVICES" "$AUDIO_DEVICE"; then
+    printf "Audio input '%s' is available.\n" "$AUDIO_DEVICE"
 else
-    echo "❌ BlackHole 2ch NOT found — run: sudo killall coreaudiod && sleep 4"
+    printf "Audio input '%s' was not found.\n" "$AUDIO_DEVICE" >&2
+    status=1
 fi
-
-echo ""
-echo "=== PROCESS CHECK ==="
-if pgrep -l ProjectMilkSyphon > /dev/null; then
-    echo "✅ ProjectMilkSyphon is running"
+printf '\n=== PROCESS CHECK ===\n'
+if pgrep -x ProjectMilkSyphon >/dev/null; then
+    echo "ProjectMilkSyphon process is running."
 else
-    echo "⚠️  ProjectMilkSyphon not running — open /Applications/ProjectMilkSyphon.app"
+    echo "ProjectMilkSyphon process was not found."
+    status=1
 fi
-
-echo ""
-echo "=== PRESET COUNT ==="
-if [ -d "$HOME/share/projectM" ]; then
-    count=$(find "$HOME/share/projectM" -name "*.milk" 2>/dev/null | wc -l)
-    echo "✅ $count presets found in ~/share/projectM/"
-else
-    echo "⚠️  No presets at ~/share/projectM — run install-presets.sh"
+printf '\n=== PRESET COUNT ===\n'
+count=$(count_presets "$HOME/share/projectM")
+printf '%s preset files available in ~/share/projectM/\n' "$count"
+if [ "$count" -eq 0 ]; then
+    status=1
 fi
+printf '\nPlayback, multi-output routing, selected Audio Source, and loaded presets require manual verification.\n'
+exit "$status"

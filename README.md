@@ -20,7 +20,7 @@ Audio Source (Chrome/Twitch/Safari)
 - No screen capture needed — pure audio routing via BlackHole virtual driver
 - 9,795 MilkDrop presets + 66 textures included
 - Multi-output routing so you hear audio normally while visualizing
-- CLI diagnostic tool to verify the entire audio chain
+- CLI checks for exact input-device availability, the visualizer process, and preset files
 
 ## Setup
 
@@ -37,7 +37,16 @@ See [SKILL.md](SKILL.md) for step-by-step instructions covering:
 | Script | Purpose |
 |--------|---------|
 | `scripts/install-presets.sh` | One-shot download of all ~10K presets and texture packs |
-| `scripts/verify-audio-route.sh` | CLI diagnostic — check BlackHole, ProjectMilkSyphon, preset count |
+| `scripts/verify-audio-route.sh [audio_device]` | Check exact input availability, visualizer process, and preset files |
+| `scripts/launch_twitch_visualizer.sh <channel> [audio_device]` | Open the channel URL and request the visualizer launch |
+
+The scripts resolve `SwitchAudioSource` once from PATH or Apple Silicon/Intel Homebrew. They report missing prerequisites or command failures with a nonzero exit status. `PROJECT_MILK_APP` may point to an alternate app location.
+
+Opening a URL does not establish playback. Available devices and preset files do not establish the selected audio route or loaded presets. Select the multi-output route and visualizer Audio Source, then check audible playback and visual response manually.
+
+## Offline script checks
+
+Run `python3 -m unittest discover -s tests -v`. Tests use fake commands and temporary files; they do not open apps or change audio settings. Native macOS routing still needs manual verification.
 
 ## Requirements
 
